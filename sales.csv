@@ -1,0 +1,5 @@
+SaleID,ProductID,QuantitySold,TotalPrice
+1,1,11,11000
+
+1,2,90,9720.00
+1,2,2,237.60

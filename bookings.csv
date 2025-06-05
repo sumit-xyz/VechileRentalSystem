@@ -1,0 +1,3 @@
+bookingID,guestName,roomID,nights,totalPrice,status
+1,Sumit khatri,1,2,2000.0,confirmed
+2,Swastik,2,2,4000.0,confirmed

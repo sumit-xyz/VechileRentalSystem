@@ -1,0 +1,3 @@
+roomID,type,pricePerNight,isAvailable
+1,Single,1000.0,false
+2,Double,2000.0,false
