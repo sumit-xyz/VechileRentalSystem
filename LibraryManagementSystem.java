@@ -15,15 +15,10 @@ class Book {
     }
 
     public String getTitle() { return title; }
-
     public String getAuthor() { return author; }
-
     public String getIsbn() { return isbn; }
-
     public boolean isAvailable() { return isAvailable; }
-
     public void markAsBorrowed() { isAvailable = false; }
-
     public void markAsReturned() { isAvailable = true; }
 
     public void displayInfo() {
@@ -31,21 +26,30 @@ class Book {
         System.out.println("Author: " + author);
         System.out.println("ISBN: " + isbn);
         System.out.println("Available: " + (isAvailable ? "Yes" : "No"));
-        System.out.println("--------------");
+        System.out.println("-----------------------");
     }
 
     @Override
     public String toString() {
-        return title + "," + author + "," + isbn + "," + isAvailable;
+        return "\"" + title + "\",\"" + author + "\",\"" + isbn + "\"," + isAvailable;
     }
 
     public static Book fromString(String line) {
-        String[] parts = line.split(",");
-        Book book = new Book(parts[0], parts[1], parts[2]);
-        if (parts.length > 3 && parts[3].equals("false")) {
-            book.markAsBorrowed();
+        try {
+            String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+            if (parts.length < 4) return null;
+
+            String title = parts[0].replaceAll("^\"|\"$", "");
+            String author = parts[1].replaceAll("^\"|\"$", "");
+            String isbn = parts[2].replaceAll("^\"|\"$", "");
+            boolean available = Boolean.parseBoolean(parts[3]);
+
+            Book book = new Book(title, author, isbn);
+            if (!available) book.markAsBorrowed();
+            return book;
+        } catch (Exception e) {
+            return null;
         }
-        return book;
     }
 }
 
@@ -57,7 +61,7 @@ class Member {
     public Member(String name, String memberId) {
         this.name = name;
         this.memberId = memberId;
-        this.borrowedBooks = new ArrayList<>();
+        borrowedBooks = new ArrayList<>();
     }
 
     public String getMemberId() { return memberId; }
@@ -68,7 +72,7 @@ class Member {
             book.markAsBorrowed();
             System.out.println("Book borrowed successfully.");
         } else {
-            System.out.println("Book is currently unavailable.");
+            System.out.println("Book is not available.");
         }
     }
 
@@ -77,7 +81,7 @@ class Member {
             book.markAsReturned();
             System.out.println("Book returned successfully.");
         } else {
-            System.out.println("This book was not borrowed by the member.");
+            System.out.println("This book was not borrowed by this member.");
         }
     }
 
@@ -85,8 +89,8 @@ class Member {
         if (borrowedBooks.isEmpty()) {
             System.out.println("No borrowed books.");
         } else {
-            for (Book book : borrowedBooks) {
-                book.displayInfo();
+            for (Book b : borrowedBooks) {
+                b.displayInfo();
             }
         }
     }
@@ -112,49 +116,49 @@ class Library {
     }
 
     public Book findBookByISBN(String isbn) {
-        for (Book book : books) {
-            if (book.getIsbn().equals(isbn)) return book;
+        for (Book b : books) {
+            if (b.getIsbn().equals(isbn)) return b;
         }
         return null;
     }
 
     public ArrayList<Book> searchBooksByTitle(String title) {
-        ArrayList<Book> results = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getTitle().toLowerCase().contains(title.toLowerCase()))
-                results.add(book);
+        ArrayList<Book> result = new ArrayList<>();
+        for (Book b : books) {
+            if (b.getTitle().toLowerCase().contains(title.toLowerCase()))
+                result.add(b);
         }
-        return results;
+        return result;
     }
 
     public ArrayList<Book> searchBooksByAuthor(String author) {
-        ArrayList<Book> results = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAuthor().toLowerCase().contains(author.toLowerCase()))
-                results.add(book);
+        ArrayList<Book> result = new ArrayList<>();
+        for (Book b : books) {
+            if (b.getAuthor().toLowerCase().contains(author.toLowerCase()))
+                result.add(b);
         }
-        return results;
+        return result;
     }
 
     public void displayAllBooks() {
         if (books.isEmpty()) {
-            System.out.println("No books in the library.");
+            System.out.println("No books available.");
         } else {
-            for (Book book : books) {
-                book.displayInfo();
+            for (Book b : books) {
+                b.displayInfo();
             }
         }
     }
 
     public void saveDataToFile(String filename) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
-            for (Book book : books) {
-                bw.write(book.toString());
+            for (Book b : books) {
+                bw.write(b.toString());
                 bw.newLine();
             }
-            System.out.println("Data saved.");
+            System.out.println("Data saved to CSV.");
         } catch (IOException e) {
-            System.out.println("Error saving data: " + e.getMessage());
+            System.out.println("Error saving: " + e.getMessage());
         }
     }
 
@@ -163,23 +167,24 @@ class Library {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = br.readLine()) != null) {
-                books.add(Book.fromString(line));
+                Book b = Book.fromString(line);
+                if (b != null) books.add(b);
             }
-            System.out.println("Data loaded.");
+            System.out.println("Data loaded from CSV.");
         } catch (IOException e) {
-            System.out.println("Error loading data: " + e.getMessage());
+            System.out.println("Error loading: " + e.getMessage());
         }
     }
 
     public Member getMemberById(String id) {
-        for (Member member : members) {
-            if (member.getMemberId().equals(id)) return member;
+        for (Member m : members) {
+            if (m.getMemberId().equals(id)) return m;
         }
         return null;
     }
 }
 
-public class libraryManagementSystem {
+public class LibraryManagementSystem {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Library library = new Library();
@@ -187,8 +192,12 @@ public class libraryManagementSystem {
 
         do {
             displayMenu();
+            while (!sc.hasNextInt()) {
+                System.out.println("Invalid input. Enter a number.");
+                sc.next(); // discard invalid input
+            }
             choice = sc.nextInt();
-            sc.nextLine(); // Consume newline
+            sc.nextLine(); // consume newline
 
             switch (choice) {
                 case 1:
@@ -202,7 +211,7 @@ public class libraryManagementSystem {
                     break;
 
                 case 2:
-                    System.out.print("Member name: ");
+                    System.out.print("Member Name: ");
                     String name = sc.nextLine();
                     System.out.print("Member ID: ");
                     String memberId = sc.nextLine();
@@ -211,12 +220,12 @@ public class libraryManagementSystem {
 
                 case 3:
                     System.out.print("Member ID: ");
-                    String memId = sc.nextLine();
-                    Member borrower = library.getMemberById(memId);
+                    String borrowerId = sc.nextLine();
+                    Member borrower = library.getMemberById(borrowerId);
                     if (borrower != null) {
                         System.out.print("Book ISBN: ");
-                        String bookIsbn = sc.nextLine();
-                        Book book = library.findBookByISBN(bookIsbn);
+                        String borrowIsbn = sc.nextLine();
+                        Book book = library.findBookByISBN(borrowIsbn);
                         if (book != null) {
                             borrower.borrowBook(book);
                         } else {
@@ -247,16 +256,16 @@ public class libraryManagementSystem {
 
                 case 5:
                     System.out.print("Search title: ");
-                    String t = sc.nextLine();
-                    for (Book b : library.searchBooksByTitle(t)) {
+                    String searchTitle = sc.nextLine();
+                    for (Book b : library.searchBooksByTitle(searchTitle)) {
                         b.displayInfo();
                     }
                     break;
 
                 case 6:
                     System.out.print("Search author: ");
-                    String a = sc.nextLine();
-                    for (Book b : library.searchBooksByAuthor(a)) {
+                    String searchAuthor = sc.nextLine();
+                    for (Book b : library.searchBooksByAuthor(searchAuthor)) {
                         b.displayInfo();
                     }
                     break;
@@ -267,21 +276,21 @@ public class libraryManagementSystem {
 
                 case 8:
                     System.out.print("Member ID: ");
-                    String mId = sc.nextLine();
-                    Member m = library.getMemberById(mId);
-                    if (m != null) {
-                        m.displayBorrowedBooks();
+                    String memId = sc.nextLine();
+                    Member mem = library.getMemberById(memId);
+                    if (mem != null) {
+                        mem.displayBorrowedBooks();
                     } else {
                         System.out.println("Member not found.");
                     }
                     break;
 
                 case 9:
-                    library.saveDataToFile("library_books.txt");
+                    library.saveDataToFile("library_books.csv");
                     break;
 
                 case 10:
-                    library.loadBooksFromFile("library_books.txt");
+                    library.loadBooksFromFile("library_books.csv");
                     break;
 
                 case 0:
@@ -291,25 +300,25 @@ public class libraryManagementSystem {
                 default:
                     System.out.println("Invalid option.");
             }
-
         } while (choice != 0);
 
         sc.close();
     }
 
     public static void displayMenu() {
-        System.out.println("\n==== Library Menu ====");
-        System.out.println("1. Add a new book");
-        System.out.println("2. Register a new member");
+        System.out.println("\n=== Library Menu ===");
+        System.out.println("1. Add new book");
+        System.out.println("2. Register new member");
         System.out.println("3. Borrow a book");
         System.out.println("4. Return a book");
         System.out.println("5. Search book by title");
         System.out.println("6. Search book by author");
         System.out.println("7. Display all books");
         System.out.println("8. Display borrowed books of a member");
-        System.out.println("9. Save data to file");
-        System.out.println("10. Load data from file");
+        System.out.println("9. Save data to CSV file");
+        System.out.println("10. Load data from CSV file");
         System.out.println("0. Exit");
         System.out.print("Enter your choice: ");
     }
 }
+
