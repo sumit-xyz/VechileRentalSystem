@@ -1,15 +1,18 @@
 package HospitalManagementSystem;
-public class Patient extends Person {
+
+public class Patient {
+    private String id;
+    private String name;
     private String disease;
 
-    public Patient(String id, String name, int age, String disease) {
-        super(id, name, age);
+    public Patient(String id, String name, String disease) {
+        this.id = id;
+        this.name = name;
         this.disease = disease;
     }
 
-    @Override
-    public void displayInfo() {
-        System.out.println("Patient ID: " + id + ", Name: " + name + ", Age: " + age + ", Disease: " + disease);
+    public String getId() {
+        return id;
     }
 
     public String getDisease() {
@@ -17,11 +20,15 @@ public class Patient extends Person {
     }
 
     public String toCSV() {
-        return id + "," + name + "," + age + "," + disease;
+        return id + "," + name + "," + disease;
     }
 
     public static Patient fromCSV(String line) {
         String[] parts = line.split(",");
-        return new Patient(parts[0], parts[1], Integer.parseInt(parts[2]), parts[3]);
+        return new Patient(parts[0], parts[1], parts[2]);
+    }
+
+    public void displayInfo() {
+        System.out.printf("Patient ID: %s | Name: %s | Disease: %s%n", id, name, disease);
     }
 }

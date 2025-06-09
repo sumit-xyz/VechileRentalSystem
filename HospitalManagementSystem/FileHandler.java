@@ -5,10 +5,9 @@ import java.util.*;
 
 public class FileHandler {
     public static void writeToFile(String filename, List<String> lines) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
             for (String line : lines) {
-                writer.write(line);
-                writer.newLine();
+                pw.println(line);
             }
         } catch (IOException e) {
             System.out.println("Error writing to file: " + filename);
@@ -17,9 +16,12 @@ public class FileHandler {
 
     public static List<String> readFromFile(String filename) {
         List<String> lines = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+        File file = new File(filename);
+        if (!file.exists()) return lines;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 lines.add(line);
             }
         } catch (IOException e) {
