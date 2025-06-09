@@ -1,0 +1,4 @@
+id,type,brand,model,rentalRatePerDay,numberOfSeats,engineCapacity,underMaintenance,availableFrom
+V001,Car,Toyota,Camry,50.00,5,,false,2025-06-13
+V002,Motorbike,Honda,CBR,30.00,,150,false,2025-06-09
+1,Car,ferrai,123,100000.00,2,,false,2025-06-09
